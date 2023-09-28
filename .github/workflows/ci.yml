@@ -20,31 +20,38 @@ jobs:
         with:
           version: "7.x"
       
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache-dependency-path: pnpm-lock.yaml
+          cache: 'pnpm'
+
       # - name: Setup Node.js environment
       #   uses: actions/setup-node@v3
       #   with:
       #     node-version: 18
       #     cache-dependency-path: yarn.lock
       #     cache: 'yarn'
-      
-      # - name: turbo cache
-      #   uses: dtinth/setup-github-actions-caching-for-turbo@v1
-      #   with:
-      #     cache-prefix: turbogha_
 
-      # - uses: actions/cache@v2
-      #   with:
-      #     path: '**/node_modules'
-      #     key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
-  
       - name: turbo cache
-        id: turbo-cache
-        uses: actions/cache@v2
+        uses: dtinth/setup-github-actions-caching-for-turbo@v1
         with:
-          path: .turbo
-          key: turbo-${{ github.job }}-${{ github.ref_name }}-${{ github.sha }}
-          restore-keys: |
-            turbo-${{ github.job }}-${{ github.ref_name }}-
+          cache-prefix: turbogha_
+
+      - uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+  
+      # - name: turbo cache
+      #   id: turbo-cache
+      #   uses: actions/cache@v2
+      #   with:
+      #     path: .turbo
+      #     key: turbo-${{ github.job }}-${{ github.ref_name }}-${{ github.sha }}
+      #     restore-keys: |
+      #       turbo-${{ github.job }}-${{ github.ref_name }}-
   
       - name : install dependencies
         run: make install
