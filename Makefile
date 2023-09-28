@@ -16,5 +16,37 @@ $(info version = $(VERSION))
 help: ## Display this help screen
 	@grep -h -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
+
+install:
+	@pnpm install
+
 build:
-	@$(shell echo build)
+	@pnpm turbo run build
+
+format:
+	@pnpm turbo run format
+
+lint:
+	@pnpm turbo run lint
+
+dev:
+	@pnpm turbo run dev
+
+start:
+	@pnpm turbo run start
+
+clean:
+	@pnpm turbo run clean
+	@find . -name 'node_modules' -exec rm -fr {} \;
+
+test:
+	@pnpm turbo run test
+
+test-logger:
+	@pnpm turbo run test --filter logger
+
+test-redis-client:
+	@pnpm turbo run test --filter redis-client
+
+sonar:
+	@sonar-scanner -Dsonar.host.url=http://localhost:9000 -Dsonar.login=admin -Dsonar.password=thefork -Dsonar.pullrequest.branch=feature/my-new-feature
