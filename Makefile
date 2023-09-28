@@ -21,32 +21,32 @@ install:
 	@pnpm install
 
 build:
-	@pnpm turbo run build
+	@yarn build
 
 format:
-	@pnpm turbo run format
+	@yarn format
 
 lint:
-	@pnpm turbo run lint
+	@yarn lint
 
 dev:
-	@pnpm turbo run dev
+	@yarn dev
 
 start:
-	@pnpm turbo run start
+	@yarn start
 
 clean:
-	@pnpm turbo run clean
+	@yarn clean
 	@find . -name 'node_modules' -exec rm -fr {} \;
 
 test:
-	@pnpm turbo run test
+	@yarn test
 
 test-logger:
-	@pnpm turbo run test --filter logger
+	@yarn test:logger
 
 test-redis-client:
-	@pnpm turbo run test --filter redis-client
+	@yarn test:redis-client
 
 sonar:
 	@sonar-scanner -Dsonar.host.url=http://localhost:9000 -Dsonar.login=admin -Dsonar.password=thefork -Dsonar.pullrequest.branch=feature/my-new-feature
