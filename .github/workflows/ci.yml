@@ -73,6 +73,14 @@ jobs:
       #   with:
       #     name: node_modules
       #   continue-on-error: true
+      - name: install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: "7.x"
+      - name : install dependencies
+        run: make install  
+      - name : build
+        run: make build
       - name : test
         run: make test
       - name: cleanup
@@ -98,8 +106,16 @@ jobs:
       #   with:
       #     name: node_modules
       #   continue-on-error: true
+      - name: install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: "7.x"
+      - name : install dependencies
+        run: make install  
+      - name : build
+        run: make build
       - name : lint
-        run: make link
+        run: make lint
 
   analysis:
     runs-on: ubuntu-latest
