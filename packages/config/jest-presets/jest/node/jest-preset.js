@@ -18,7 +18,7 @@ module.exports = {
     }
   },
   coverageDirectory: 'coverage',
-  coverageReporters: ['lcov'],
+  coverageReporters: ['lcov', 'json'],
   displayName: {
     name: "library",
     color: "blueBright",

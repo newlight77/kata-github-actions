@@ -8,13 +8,7 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [16.x]
-
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@v3
@@ -26,18 +20,37 @@ jobs:
         with:
           version: "7.x"
   
-      - name : test
+      - name : install
         run: make install
   
       - name : build
         run: make build
   
+      - name: upload node_modules
+        uses: actions/upload-artifact@v3
+        with:
+          name: node_modules
+          path: node_modules
+          retention-days: 1
+
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+      - name: download node_modules
+        uses: actions/download-artifact@v3
+        id: download-coverage
+        with:
+          name: node_modules
+        continue-on-error: true
       - name : test
         run: make test
-
       - name: cleanup
         run: sudo chown -R $(whoami):$(id -ng) .
-
       - name: upload coverage
         uses: actions/upload-artifact@v3
         with:
@@ -45,6 +58,33 @@ jobs:
           path: coverage/lcov.info
           retention-days: 1
   
+  lint:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+      - name: download node_modules
+        uses: actions/download-artifact@v3
+        id: download-coverage
+        with:
+          name: node_modules
+        continue-on-error: true
+      - name : lint
+        run: make link
+
+  analysis:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: download coverage
+        uses: actions/download-artifact@v3
+        id: download-coverage
+        with:
+          name: coverage
+        continue-on-error: true
       - if: contains(github.event.pull_request.labels.*.name, 'no-coverage')
         name: run with no-coverage
         run: echo ci passed
@@ -52,6 +92,53 @@ jobs:
       - if: ${{ !contains(github.event.pull_request.labels.*.name, 'no-coverage') }}
         name: run with coverage
         run: echo ci passed
+
+  notify-slack:
+    needs:
+      - analysis
+      - lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: slack notificaiton
+        uses: slackapi/slack-github-action@v1.22.0
+        env:
+          SLACK_BOT_TOKEN: xoxb-443950202276-5974767582673-S6GLChOMWZBxqyLESnDh9SuS
+        with:
+          channel-id: "C05UA1LUW1H" #ci
+          payload: |
+            {
+              "text": "SonarCloud scanner with no-coverage",
+              "attachments": [
+                {
+                  "color": "warning",
+                  "pretext": "Quality Gate bypassed with no-coverage",
+                  "fields": [
+                    {
+                      "title": "Repo",
+                      "value": "<https://github.com/${{ github.repository }} | ${{ github.repository }}>",
+                      "short": true
+                    },
+                    {
+                      "title": "Pull Request",
+                      "short": true,
+                      "value": "<https://github.com/${{ github.repository }}/pull/${{ github.event.pull_request.number }}>"
+                    },
+                    {
+                      "title": "Status",
+                      "short": true,
+                      "value": "CI Passed"
+                    },
+                    {
+                      "title": "Branch",
+                      "value": "${{ github.head_ref || github.ref_name }}",
+                      "short": true
+                    }
+                  ],
+                  "footer_icon": "https://github.githubassets.com/favicon.ico",
+                  "footer": "<https://github.com/${{ github.repository }} | ${{ github.repository }}/pull/${{ github.event.pull_request.number }}>"
+                }
+              ]
+            }
 
   once_merged:
     if: github.event.pull_request.merged == true
