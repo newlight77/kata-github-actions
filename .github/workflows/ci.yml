@@ -32,6 +32,11 @@ jobs:
       #   with:
       #     cache-prefix: turbogha_
 
+      # - uses: actions/cache@v2
+      #   with:
+      #     path: '**/node_modules'
+      #     key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+  
       - name: turbo cache
         id: turbo-cache
         uses: actions/cache@v2
@@ -47,11 +52,6 @@ jobs:
       - name : build
         run: make build
 
-      # - uses: actions/cache@v2
-      #   with:
-      #     path: '**/node_modules'
-      #     key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
-  
       # - name: cache node_modules
       #   uses: actions/upload-artifact@v3
       #   with:
