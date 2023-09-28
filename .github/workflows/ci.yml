@@ -21,6 +21,30 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: "7.x"
+  
+      - name : test
+        run: make install
+  
+      - name : build
+        run: make build
+  
+      - name : test
+        run: make test
+
+      - name: cleanup
+        run: sudo chown -R $(whoami):$(id -ng) .
+
+      - name: upload coverage
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage
+          path: coverage/lcov.info
+          retention-days: 1
+  
       - if: contains(github.event.pull_request.labels.*.name, 'no-coverage')
         name: run with no-coverage
         run: echo ci passed
@@ -34,5 +58,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - if: contains(github.event.pull_request.labels.*.name, 'no-coverage')
-        name: Run post-merged
+        name: run post-merged
         run : echo run a post-merged job

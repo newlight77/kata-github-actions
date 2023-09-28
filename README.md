@@ -1,16 +1,17 @@
-# Blog s TS monorepo using Turborepo
+# Kata github actions monorepo using Turborepo
 
 This Turborepo includes the following sharing packages and apps.
 
 ## Apps and Packages
 
-- `apps/site-nextjs`: a [Next.js](https://nextjs.org/) app
-- `packages/logger`: isomorphic logger (a small wrapper around console.log)
-- `packages/eslint-config-custom`: Jest and ESLint configurations
-- `packages/eslint-config-custom-server`: Jest and ESLint configurations
-- `packages/jest-config`: Jest and ESLint configurations
-- `packages/tsconfig`: tsconfig.json;s used throughout the monorepo
-- `packages/ui`: a dummy React UI library (which contains a single `<CounterButton>` component)
+- `packages/config/eslint-config-custom`: Jest and ESLint configurations
+- `packages/config/eslint-config-custom-next`: Jest and ESLint configurations
+- `packages/config/eslint-config-custom-react`: Jest and ESLint configurations
+- `packages/config/eslint-config-custom-server`: Jest and ESLint configurations
+- `packages/config/jest-config`: Jest and ESLint configurations
+- `packages/config/tsconfig`: tsconfig.json;s used throughout the monorepo
+- `packages/lib/logger`: isomorphic logger (a small wrapper around console.log)
+- `packages/spi/redis-client`: dummy redis client
 
 Each package and app is 100% [TypeScript](https://www.typescriptlang.org/).
 
@@ -33,12 +34,3 @@ yarn install
 yarn test
 yarn dev
 ```
-
-## TODO
-
-- add more unit tests on all packages
-- tools/scripts to export data from notion/contentful
-- refine markdown css, perhaps use only [this](https://github.com/sindresorhus/github-markdown-css/blob/main/github-markdown.css)  :
-- mermaid component in react-notion-library (should be renamed to react-markdown-library)
-- create more stories
-- search feature
