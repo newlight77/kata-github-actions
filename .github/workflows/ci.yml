@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    types: [opened, closed]
+    branches: [ main ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x]
+
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+
+      - if: contains(github.event.pull_request.labels.*.name, 'no-coverage')
+        name: run with no-coverage
+        run: echo ci passed
+
+      - if: ${{ !contains(github.event.pull_request.labels.*.name, 'no-coverage') }}
+        name: run with coverage
+        run: echo ci passed
+
+      - uses: slackapi/slack-github-action@v1.22.0
+        env:
+          SLACK_BOT_TOKEN: xoxb-443950202276-5974767582673-S6GLChOMWZBxqyLESnDh9SuS
+        with:
+          channel-id: "C05UA1LUW1H" #ci
+          payload: |
+            {
+              "text": "SonarCloud scanner with no-coverage",
+              "attachments": [
+                {
+                  "color": "warning",
+                  "pretext": "Quality Gate bypassed with no-coverage",
+                  "fields": [
+                    {
+                      "title": "Repo",
+                      "value": "<https://github.com/${{ github.repository }} | ${{ github.repository }}>",
+                      "short": true
+                    },
+                    {
+                      "title": "Pull Request",
+                      "short": true,
+                      "value": "<https://github.com/${{ github.repository }}/pull/${{ github.event.pull_request.number }}>"
+                    },
+                    {
+                      "title": "Status",
+                      "short": true,
+                      "value": "QG bypassed"
+                    },
+                    {
+                      "title": "Branch",
+                      "value": "${{ github.head_ref || github.ref_name }}",
+                      "short": true
+                    }
+                  ],
+                  "footer_icon": "https://github.githubassets.com/favicon.ico",
+                  "footer": "<https://github.com/${{ github.repository }} | ${{ github.repository }}/pull/${{ github.event.pull_request.number }}>"
+                }
+              ]
+            }
+
+  once_merged:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - if: contains(github.event.pull_request.labels.*.name, 'no-coverage')
+        name: Run post-merged
+        run : echo run a post-merged job
