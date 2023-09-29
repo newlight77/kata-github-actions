@@ -52,20 +52,32 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
-      - name: install dependencies
-        run: pnpm install
-  
-      # - name: turbo cache
-      #   id: turbo-cache
-      #   uses: actions/cache@v2
+      # - name: Set up Node.js
+      #   uses: actions/setup-node@v3
       #   with:
-      #     path: .turbo
-      #     key: turbo-${{ github.job }}-${{ github.ref_name }}-${{ github.sha }}
-      #     restore-keys: |
-      #       turbo-${{ github.job }}-${{ github.ref_name }}-
+      #     node-version: '16'
+      #     cache: 'pnpm'
+
+      - name: Cache node_modules
+        id: cache-node-modules
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-${{ matrix.node-version }}-nodemodules-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+              ${{ runner.os }}-${{ matrix.node-version }}-nodemodules-
+
+      - name: turbo cache
+        id: turbo-cache
+        uses: actions/cache@v3
+        with:
+          path: .turbo
+          key: turbo-${{ github.job }}-${{ github.ref_name }}-${{ github.sha }}
+          restore-keys: |
+            turbo-${{ github.job }}-${{ github.ref_name }}-
   
-      # - name : install dependencies
-      #   run: make install
+      - name : install dependencies
+        run: pnpm install
   
       - name : build
         run: make build
