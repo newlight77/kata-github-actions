@@ -6,7 +6,25 @@ on:
   pull_request:
     branches: [ main ]
 
+env:
+  TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
 jobs:
+  display-variables:
+    name: display ci variables
+    runs-on: ubuntu-latest
+    environment: CI
+    steps:
+    - name: Use variables
+      run: |
+        echo "SECRET_TOKEN : $SECRET_TOKEN"
+        echo "VAR_TOKEN : $VARS_TOKEN"
+        echo "ENV_TOKEN : $ENV_TOKEN"
+      env:
+        SECRET_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        VARS_TOKEN: ${{ vars.SLACK_BOT_TOKEN }}
+        ENV_TOKEN: ${{ env.TOKEN }}
+
   build:
     runs-on: ubuntu-latest
     steps:
@@ -18,31 +36,24 @@ jobs:
       - name: install pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: "7.x"
-      
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
-          cache-dependency-path: pnpm-lock.yaml
-          cache: 'pnpm'
+          version: 8
+          run_install: false
 
-      # - name: Setup Node.js environment
-      #   uses: actions/setup-node@v3
-      #   with:
-      #     node-version: 18
-      #     cache-dependency-path: yarn.lock
-      #     cache: 'yarn'
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
 
-      - name: turbo cache
-        uses: dtinth/setup-github-actions-caching-for-turbo@v1
+      - uses: actions/cache@v3
+        name: Setup pnpm cache
         with:
-          cache-prefix: turbogha_
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
 
-      - uses: actions/cache@v2
-        with:
-          path: '**/node_modules'
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+      - name: install dependencies
+        run: pnpm install
   
       # - name: turbo cache
       #   id: turbo-cache
@@ -53,8 +64,8 @@ jobs:
       #     restore-keys: |
       #       turbo-${{ github.job }}-${{ github.ref_name }}-
   
-      - name : install dependencies
-        run: make install
+      # - name : install dependencies
+      #   run: make install
   
       - name : build
         run: make build
@@ -147,16 +158,17 @@ jobs:
       - analysis
       - lint
     runs-on: ubuntu-latest
+    environment: CI
     steps:
       - name: slack notificaiton
         uses: slackapi/slack-github-action@v1.22.0
         env:
-          SLACK_BOT_TOKEN: xoxb-443950202276-5974767582673-S6GLChOMWZBxqyLESnDh9SuS
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
         with:
           channel-id: "C05UA1LUW1H" #ci
           payload: |
             {
-              "text": "SonarCloud scanner with no-coverage",
+              "text": "github workflow",
               "attachments": [
                 {
                   "color": "warning",
