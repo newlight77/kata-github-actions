@@ -1,5 +1,4 @@
 packages:
   - "apps/*"
-  - "packages/config/*"
-  - "packages/lib/*"
-  - "packages/spi/*"
+  - "packages/shared-lib/**/*"
+  - "packages/shared-spi/*"
