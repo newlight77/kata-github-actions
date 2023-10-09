@@ -1,0 +1,25 @@
+{
+    "extends": "@istanbuljs/nyc-config-typescript",
+    
+    "all": true,
+    "cache": false,
+
+    "require": "ts-node/register",
+    "instrument": true,
+    "temp-dir": "./temp",
+    "report-dir": "./coverage",
+    "reporter": [
+        "lcov",
+        "html"
+    ],
+    "source-map": true,
+    "produce-source-map": false,
+
+    "check-coverage": false,
+    "lines": 80,
+    "statements": 80,
+    "functions": 80,
+    "branches": 80,
+
+    "excludeNodeModules": true
+}

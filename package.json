@@ -1,6 +1,6 @@
 {
-  "name": "kata-github-actions",
-  "repository": "kata-github-actions",
+  "name": "kata-monorepo-github-actions",
+  "repository": "kata-monorepo-github-actions",
   "author": "Kong To <newlight77@gmail.com>",
   "private": true,
   "scripts": {
@@ -10,16 +10,25 @@
     "format": "prettier '**/*.{js,jsx,ts,tsx,md}' --write",
     "lint": "turbo run lint --cache-dir=.turbo",
     "test": "turbo run test --cache-dir=.turbo",
-    "test:logger": "turbo run test --cache-dir=.turbo --filter logger",
-    "test:redis-client": "turbo run test --cache-dir=.turbo --filter redis-client",
+    "test:job": "turbo run test --cache-dir=.turbo --filter job-nestjs",
+    "test:unit": "turbo run test:unit --cache-dir=.turbo",
+    "test:unit:logger": "turbo run test:unit --cache-dir=.turbo --filter logger",
+    "test:unit:redis-client": "turbo run test:unit --cache-dir=.turbo --filter redis-client",
+    "test:features": "turbo run test:features --cache-dir=.turbo",
     "clean": "turbo run clean & find . -name 'node_modules' -exec rm -fr {} \\;",
+    "coverage:merge": "./util/ci/prepare-coverage.sh && nyc merge coverage/unit coverage/merged/coverage-unit-merged.json && nyc merge coverage/features coverage/merged/coverage-features-merged.json && nyc report --temp-dir ./coverage/merged --reporter=lcov",
     "coverage:report": "sonar-scanner -Dsonar.host.url=${SONAR_URL} -Dsonar.login=${SONAR_USER} -Dsonar.password=${SONAR_PASSWORD}"
   },
   "devDependencies": {
-    "@trivago/prettier-plugin-sort-imports": "^3.3.1",
+    "@trivago/prettier-plugin-sort-imports": "^4.2.0",
     "npm-run-all": "^4.1.5",
-    "prettier": "^2.7.1",
+    "nyc": "^15.1.0",
+    "prettier": "^3.0.3",
     "turbo": "^1.8.8"
   },
-  "packageManager": "pnpm@8.1.0"
+  "nyc": {
+    "extends": "./packages/shared-lib/config/nycrc/.nycrc"
+  },
+
+  "packageManager": "pnpm@8.8.0"
 }

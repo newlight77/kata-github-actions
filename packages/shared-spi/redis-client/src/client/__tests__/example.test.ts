@@ -1,4 +1,4 @@
-import { newLogger } from "logger";
+import { newLogger } from "@shared-lib/logger";
 
 const logger = newLogger("logger test");
 logger.debug = logger.noOp;

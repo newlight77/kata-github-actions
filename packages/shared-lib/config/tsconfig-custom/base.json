@@ -1,9 +1,9 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
+  "display": "Base",
   "compilerOptions": {
     "allowJs": true,
     "allowSyntheticDefaultImports" : true,
-    "baseUrl": ".",
     "composite": false,
     "declaration": true,
     "declarationMap": true,
@@ -13,27 +13,36 @@
     "importHelpers": false,
     "inlineSources": false,
     "isolatedModules": true,
-    "lib": ["ESNext"],
+    "lib": ["es2022"],
     "module": "CommonJs",
     "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": false,
     "noImplicitThis": true,
     "noImplicitAny": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
+    "outDir": "./dist",
     "paths": {
-      "@/lib/*": ["lib/*"]
+      "@apps/*": ["/apps/*"],
+      "@shared-context/*": ["/packages/shared-context/*"],
+      "@shared-lib/*": ["/packages/shared-lib/*"],
+      "@shared-spi/*": ["/packages/shared-spi/*"]
     },
     "preserveWatchOutput": true,
     "resolveJsonModule": true,
+    "rootDirs": ["./src", "./test", "./__test__"],
     "skipLibCheck": true,
     "strict": true,
     "strictNullChecks": true,
+    "strictPropertyInitialization": false,
     "sourceMap": true,
-    "target": "ESNext"
+    "removeComments": true,
+    "target": "es2022"
   },
-  "display": "Node 16",
+  "exclude": ["node_modules", "dist", "build"],
+  "include": ["src/**/*.ts", "src/**/*.js"],
   "ts-node": {
     "esm": true,
     "esModuleInterop": true,

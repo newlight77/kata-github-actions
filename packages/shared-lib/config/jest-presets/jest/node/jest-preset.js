@@ -25,7 +25,10 @@ module.exports = {
   },
   detectOpenHandles: true,
   forceExit: true,
-  globalSetup: "jest-presets/jest/global.setup.js",
+  setupFiles: [
+    "@shared-lib/jest-presets/jest/global.setup.js"
+  ],
+  // globalSetup: "jest-presets/jest/global.setup.js",
   // globalTeardown: "<rootDir>/src/tests/jest-globals-teardown.ts",
   moduleDirectories: ['node_modules'],
   moduleFileExtensions: [ "js", "jsx", "json", "node", "ts"],
@@ -41,11 +44,15 @@ module.exports = {
   testEnvironment: "node",
   testMatch: [
     '**/__tests__/**/*.(spec|test).(js|ts)',
+    "**/*.(spec|test).(js|ts)"
   ],
   testPathIgnorePatterns: ["/node_modules/"],
   transform: {
     '^.+\\.(gql|graphql)$': '@graphql-tools/jest-transform',
-    "^.+\\.(ts|ts)?$": "ts-jest",
+    "^.+\\.(ts|ts)?$": [
+      "ts-jest",
+      {tsconfig: './tsconfig.build.json'},
+    ]
   },
   // transformIgnorePatterns: ['node_modules/'],
   transformIgnorePatterns: ["/node_modules/(?!(logger))"],

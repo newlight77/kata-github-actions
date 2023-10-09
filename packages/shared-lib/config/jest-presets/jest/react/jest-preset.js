@@ -20,14 +20,17 @@ module.exports = {
     }
   },
   coverageDirectory: 'coverage',
-  coverageReporters: ['lcov'],
+  coverageReporters: ['lcov', 'json'],
   displayName: {
     name: "site nextjs",
     color: "greenBright",
   },
   detectOpenHandles: true,
   forceExit: true,
-  globalSetup: "jest-presets/jest/global.setup.js",
+  setupFiles: [
+    "@shared-lib/jest-presets/jest/global.setup.js"
+  ],
+  // globalSetup: "jest-presets/jest/global.setup.js",
   // globalTeardown: "<rootDir>/src/tests/jest-globals-teardown.ts",
   moduleDirectories: ['node_modules'],
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
@@ -51,9 +54,15 @@ module.exports = {
   // testRegex: "((\\.|/*.)(spec))\\.js?$",
   transform: {
     '^.+\\.(gql|graphql)$': '@graphql-tools/jest-transform',
-    "^.+\\.(ts|tsx)?$": "ts-jest",
+    "^.+\\.(ts|tsx)?$": [
+      "ts-jest",
+      {tsconfig: './tsconfig.build.json'},
+    ],
     '^.+\\.?styles\\.tsx?$': 'babel-jest',
-    '^.+(?!\\styles)\\.tsx?$': 'ts-jest'
+    '^.+(?!\\styles)\\.tsx?$': [
+      "ts-jest",
+      {tsconfig: './tsconfig.build.json'},
+    ]
   },
   transformIgnorePatterns: ['node_modules/'],
   verbose: true,

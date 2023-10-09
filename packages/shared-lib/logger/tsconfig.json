@@ -1,11 +1,9 @@
 {
   "compilerOptions": {
-    "lib": ["ESNext"],
-    "module": "CommonJS",
     "outDir": "./dist",
-    "rootDir": "./src"
+    "rootDirs": ["./src", "./test", "./__test__"]
   },
-  "exclude": ["node_modules"],
-  "extends": "tsconfig/base.json",
+  "exclude": ["node_modules", "build", "dist"],
+  "extends": "@shared-lib/tsconfig-custom/base.json",
   "include": ["src"]
 }

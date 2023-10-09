@@ -1,5 +1,5 @@
 {
-  "name": "tsconfig",
+  "name": "@shared-lib/tsconfig-custom",
   "version": "0.0.0",
   "private": true,
   "license": "MIT",

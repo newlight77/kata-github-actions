@@ -1,9 +1,10 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
+  "display": "React.js",
   "compilerOptions": {
     "allowJs": true,
     "allowSyntheticDefaultImports" : true,
-    "baseUrl": ".",
+    "baseUrl": "./",
     "composite": false,
     "declaration": true,
     "declarationMap": true,
@@ -13,27 +14,34 @@
     "importHelpers": false,
     "inlineSources": false,
     "isolatedModules": true,
-    "lib": ["esnext"],
-    "module": "CommonJs",
+    "jsx": "react",
+    "lib": ["dom", "dom.iterable", "es2022"],
+    "module": "es2022",
     "moduleResolution": "node",
+    "noEmit": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": false,
     "noImplicitThis": true,
     "noImplicitAny": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
+    "outDir": "./dist",
     "paths": {
-      "@/lib/*": ["lib/*"]
+      "@/react": [ "./node_modules/@types/react" ],
+      "@/components/*": ["components/*"],
+      "@/styles/*": ["styles/*"]
     },
     "preserveWatchOutput": true,
     "resolveJsonModule": true,
+    "rootDirs": ["./src", "./storybook"],
     "skipLibCheck": true,
     "strict": true,
     "strictNullChecks": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "target": "es2022"
   },
-  "display": "Default",
-  "exclude": ["node_modules"],
+  "exclude": ["dist", "build", "node_modules", "**/*.test.ts", "__tests__"],
+  "include": ["**/*.ts", "**/*.tsx"],
   "ts-node": {
     "esm": true,
     "esModuleInterop": true,

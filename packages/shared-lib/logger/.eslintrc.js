@@ -1,4 +1,4 @@
 module.exports = {
   root: true,
-  extends: ["eslint-config-custom"],
+  extends: ["@shared-lib/eslint-config-custom/node/.eslintrc.js"],
 };

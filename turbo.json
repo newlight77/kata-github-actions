@@ -16,7 +16,17 @@
       "dependsOn": ["^build"]
     },
     "test": {
+      "inputs": ["**/*.spec.ts", "**/*.spec.tsx", "**/*.feature", "**/*.step.ts"],
+      "outputs": ["coverage/**"],
+      "dependsOn": []
+    },
+    "test:unit": {
       "inputs": ["**/*.spec.ts", "**/*.spec.tsx"],
+      "outputs": ["coverage/**"],
+      "dependsOn": []
+    },
+    "test:features": {
+      "inputs": ["**/*.feature", "**/*.step.ts"],
       "outputs": ["coverage/**"],
       "dependsOn": []
     },
