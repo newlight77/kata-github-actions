@@ -4,38 +4,74 @@ description: "An action to run the code analysis"
 runs:
   using: "composite"
   steps:
-    - uses: actions/checkout@v3
+    - name: checkout 🛎️
+      uses: actions/checkout@v3
       with:
-        fetch-depth: 0
-    - uses: actions/download-artifact@v3
-      id: download-coverage
+        persist-credentials: false
+    - name: download coverage from unit tests
+      uses: actions/download-artifact@v3
+      id: download-coverage-from-unit-tests
       with:
-        name: coverage
+        name: coverage-from-unit-tests
       continue-on-error: true
-    - if: contains(github.event.head_commit.message, 'no-coverage')
-      name: Get current quality gate for project
+    - name: download coverage from features tests
+      uses: actions/download-artifact@v3
+      id: download-coverage-from-features-tests
+      with:
+        name: coverage-from-features-tests
+      continue-on-error: true
+    - name: install pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: 8
+        run_install: false
+    - name: set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16'
+        cache: 'pnpm'
+    - name : install dependencies
+      run: make install-offline
+      shell: bash
+    - name : prepare and merge coverage files
+      run: make merge-coverage
+      shell: bash
+    - name: Get Head Commit Message
+      id: get_head_commit_message
+      run: |
+        echo "HEAD_COMMIT_MESSAGE=$(git show -s --format=%s)" >> "$GITHUB_OUTPUT"
+      shell: bash
+
+    - name: get current quality gate for project if bypass-quality-gate
+      if: contains(env.HEAD_COMMIT_MESSAGE, 'bypass-quality-gate')
       run: |
         current=$(curl -s -u $SONARCLOUD_ADMIN_TOKEN https://sonarcloud.io/api/qualitygates/get_by_project?projectKey=lafourchette_${{ github.event.repository.name }})
+        echo "CURRENT_GATE_NAME=$current"
         echo "CURRENT_GATE_NAME=$current" >> $GITHUB_ENV
+        echo "env.CURRENT_GATE_NAME: $CURRENT_GATE_NAME"
       shell: bash
-    - name: display CURRENT_GATE_NAME
-      run: |
-        echo "CURRENT_GATE_NAME : $CURRENT_GATE_NAME"
-      env:
-        CURRENT_GATE_NAME: ${{ env.CURRENT_GATE_NAME }}
-      shell: bash
-    - if: contains(github.event.head_commit.message, 'no-coverage')
+    - name: switch to temporary quality gate if bypass-quality-gate
+      if: contains(env.HEAD_COMMIT_MESSAGE, 'bypass-quality-gate')
       uses: newlight77/kata-monorepo-github-actions/.github/actions/sonarcloud-quality-gate-switch@sonarcloud-quality-gate-switch
       with:
         sonarcloudToken: ${{ env.SONARCLOUD_ADMIN_TOKEN }}
         projectKey: "lafourchette_${{ github.event.repository.name }}"
         currentGateName: ${{ env.CURRENT_GATE_NAME }}
         tmpGateName: "TheFork Way Tmp"
-    - uses: SonarSource/sonarcloud-github-action@v2.0.0
+    # - name: run sonarcloud action
+    #   uses: SonarSource/sonarcloud-github-action@v2.0.0
+    #   env:
+    #     SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
+    - name: Use variables
+      run: |
+        echo "HEAD_COMMIT_MESSAGE=$HEAD_COMMIT_MESSAGE"
+        echo "suppose sonar scanner is running with token=$SONAR_TOKEN"
+      shell: bash
       env:
         SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
-    - if: contains(github.event.head_commit.message, 'no-coverage')
-      name: slack notificaiton using bypassing
+        HEAD_COMMIT_MESSAGE: ${{ env.HEAD_COMMIT_MESSAGE }}
+    - name: slack notification using bypassing if bypass-quality-gate
+      if: contains(env.HEAD_COMMIT_MESSAGE, 'bypass-quality-gate')
       uses: slackapi/slack-github-action@v1.22.0
       env:
         SLACK_BOT_TOKEN: ${{ env.SLACK_BOT_TOKEN }}
