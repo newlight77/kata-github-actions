@@ -1,0 +1,67 @@
+name: 'Run code analysis'
+description: "An action to run the code analysis"
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - uses: actions/download-artifact@v3
+      id: download-coverage
+      with:
+        name: coverage
+      continue-on-error: true
+    - if: contains(github.event.head_commit.message, 'no-coverage')
+      name: Get current quality gate for project
+      run: |
+        current=$(curl -s -u $SONARCLOUD_ADMIN_TOKEN https://sonarcloud.io/api/qualitygates/get_by_project?projectKey=lafourchette_${{ github.event.repository.name }})
+        echo "CURRENT_GATE_NAME=$current" >> $GITHUB_ENV
+      shell: bash
+    - name: display CURRENT_GATE_NAME
+      run: |
+        echo "CURRENT_GATE_NAME : $CURRENT_GATE_NAME"
+      env:
+        CURRENT_GATE_NAME: ${{ env.CURRENT_GATE_NAME }}
+      shell: bash
+    - if: contains(github.event.head_commit.message, 'no-coverage')
+      uses: newlight77/kata-monorepo-github-actions/.github/actions/sonarcloud-quality-gate-switch@sonarcloud-quality-gate-switch
+      with:
+        sonarcloudToken: ${{ env.SONARCLOUD_ADMIN_TOKEN }}
+        projectKey: "lafourchette_${{ github.event.repository.name }}"
+        currentGateName: ${{ env.CURRENT_GATE_NAME }}
+        tmpGateName: "TheFork Way Tmp"
+    - uses: SonarSource/sonarcloud-github-action@v2.0.0
+      env:
+        SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
+    - if: contains(github.event.head_commit.message, 'no-coverage')
+      name: slack notificaiton using bypassing
+      uses: slackapi/slack-github-action@v1.22.0
+      env:
+        SLACK_BOT_TOKEN: ${{ env.SLACK_BOT_TOKEN }}
+      with:
+        channel-id: "C05UA1LUW1H" #ci
+        payload: |
+          {
+            "text": "github workflow",
+            "attachments": [
+              {
+                "color": "warning",
+                "pretext": "Quality Gate bypassed",
+                "fields": [
+                  {
+                    "title": "Pull Request",
+                    "short": true,
+                    "value": "<https://github.com/${{ github.repository }}/pull/${{ github.event.pull_request.number }}>"
+                  },
+                  {
+                    "title": "Branch",
+                    "value": "${{ github.head_ref || github.ref_name }}",
+                    "short": true
+                  }
+                ],
+                "footer_icon": "https://github.githubassets.com/favicon.ico",
+                "footer": "<https://github.com/${{ github.repository }} | ${{ github.repository }}/pull/${{ github.event.pull_request.number }}>"
+              }
+            ]
+          }

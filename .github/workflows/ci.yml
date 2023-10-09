@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 env:
-  TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+  ENV_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
 
 jobs:
   display-variables:
@@ -23,73 +23,32 @@ jobs:
       env:
         SECRET_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
         VARS_TOKEN: ${{ vars.SLACK_BOT_TOKEN }}
-        ENV_TOKEN: ${{ env.TOKEN }}
+        ENV_TOKEN: ${{ env.ENV_TOKEN }}
 
   build:
     runs-on: ubuntu-latest
+    needs: display-variables
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@v3
         with:
           persist-credentials: false
-
       - name: install pnpm
         uses: pnpm/action-setup@v2
         with:
           version: 8
           run_install: false
-
-      - name: Get pnpm store directory
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-
-      - uses: actions/cache@v3
-        name: Setup pnpm cache
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
         with:
-          path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      # - name: Set up Node.js
-      #   uses: actions/setup-node@v3
-      #   with:
-      #     node-version: '16'
-      #     cache: 'pnpm'
-
-      - name: Cache node_modules
-        id: cache-node-modules
-        uses: actions/cache@v3
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-${{ matrix.node-version }}-nodemodules-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-              ${{ runner.os }}-${{ matrix.node-version }}-nodemodules-
-
-      - name: turbo cache
-        id: turbo-cache
-        uses: actions/cache@v3
-        with:
-          path: .turbo
-          key: turbo-${{ github.job }}-${{ github.ref_name }}-${{ github.sha }}
-          restore-keys: |
-            turbo-${{ github.job }}-${{ github.ref_name }}-
-  
+          node-version: '16'
+          cache: 'pnpm'
       - name : install dependencies
-        run: pnpm install
-  
+        run: make install
       - name : build
         run: make build
-
-      # - name: cache node_modules
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: node_modules
-      #     path: node_modules
-      #     retention-days: 1
-
-  test:
+      
+  test-unit:
     runs-on: ubuntu-latest
     needs: build
     steps:
@@ -97,77 +56,149 @@ jobs:
         uses: actions/checkout@v3
         with:
           persist-credentials: false
-      # - name: download node_modules
-      #   uses: actions/download-artifact@v3
-      #   id: download-coverage
-      #   with:
-      #     name: node_modules
-      #   continue-on-error: true
       - name: install pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: "7.x"
+          version: 8
+          run_install: false
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+          cache: 'pnpm'
       - name : install dependencies
-        run: make install  
+        run: make install-offline
       - name : build
         run: make build
       - name : test
-        run: make test
+        run: make test-unit
       - name: cleanup
         run: sudo chown -R $(whoami):$(id -ng) .
-      - name: upload coverage
+      - name: upload coverage from unit tests
         uses: actions/upload-artifact@v3
         with:
-          name: coverage
-          path: coverage/lcov.info
+          name: coverage-from-unit-tests
+          path: |
+            **/coverage/lcov.info
+            **/coverage/coverage-final.json
           retention-days: 1
   
   lint:
     runs-on: ubuntu-latest
-    needs: test
+    needs:
+      - test-unit
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@v3
         with:
           persist-credentials: false
-      # - name: download node_modules
-      #   uses: actions/download-artifact@v3
-      #   id: download-coverage
-      #   with:
-      #     name: node_modules
-      #   continue-on-error: true
       - name: install pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: "7.x"
+          version: 8
+          run_install: false
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+          cache: 'pnpm'
       - name : install dependencies
-        run: make install  
+        run: make install-offline
       - name : build
         run: make build
       - name : lint
         run: make lint
 
-  analysis:
+  codecov:
     runs-on: ubuntu-latest
-    needs: test
+    needs:
+      - test-unit
     steps:
-      - name: download coverage
-        uses: actions/download-artifact@v3
-        id: download-coverage
+      - name: Checkout 🛎️
+        uses: actions/checkout@v3
         with:
-          name: coverage
+          persist-credentials: false
+      - name: download coverage from unit tests
+        uses: actions/download-artifact@v3
+        id: download-coverage-from-unit-tests
+        with:
+          name: coverage-from-unit-tests
         continue-on-error: true
-      - if: contains(github.event.pull_request.labels.*.name, 'no-coverage')
-        name: run with no-coverage
-        run: echo ci passed
+      - name: download coverage from features tests
+        uses: actions/download-artifact@v3
+        id: download-coverage-from-features-tests
+        with:
+          name: coverage-from-features-tests
+        continue-on-error: true
+      - name: install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          run_install: false
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+          cache: 'pnpm'
+      - name : install dependencies
+        run: make install-offline
+      - name : prepare and merge coverage files
+        run: make merge-coverage
+      - name: codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/lcov.info # optional
+          flags: unittests # optional
+          name: codecov-umbrella # optional
+          fail_ci_if_error: true # optional (default = false)
+          verbose: false # optional (default = false)
 
-      - if: ${{ !contains(github.event.pull_request.labels.*.name, 'no-coverage') }}
-        name: run with coverage
-        run: echo ci passed
-
+  sonarcloud:
+    runs-on: ubuntu-latest
+    needs: test-unit
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+      - name: download coverage from unit tests
+        uses: actions/download-artifact@v3
+        id: download-coverage-from-unit-tests
+        with:
+          name: coverage-from-unit-tests
+        continue-on-error: true
+      - name: download coverage from features tests
+        uses: actions/download-artifact@v3
+        id: download-coverage-from-features-tests
+        with:
+          name: coverage-from-features-tests
+        continue-on-error: true
+      - name: install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          run_install: false
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+          cache: 'pnpm'
+      - name : install dependencies
+        run: make install-offline
+      - name : prepare and merge coverage files
+        run: make merge-coverage
+      - name: run sonarcloud scanner
+        uses: newlight77/kata-monorepo-github-actions/.github/actions/sonarcloud-scanner@sonarcloud-quality-gate-switch
+        env:
+          SONARCLOUD_ADMIN_TOKEN: ${{ secrets.SONARCLOUD_ADMIN_TOKEN }}
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        
   notify-slack:
     needs:
-      - analysis
+      - codecov
+      - sonarcloud
       - lint
     runs-on: ubuntu-latest
     environment: CI
@@ -180,26 +211,16 @@ jobs:
           channel-id: "C05UA1LUW1H" #ci
           payload: |
             {
-              "text": "github workflow",
+              "text": "github CI passed",
               "attachments": [
                 {
                   "color": "warning",
                   "pretext": "Quality Gate bypassed with no-coverage",
                   "fields": [
                     {
-                      "title": "Repo",
-                      "value": "<https://github.com/${{ github.repository }} | ${{ github.repository }}>",
-                      "short": true
-                    },
-                    {
                       "title": "Pull Request",
                       "short": true,
                       "value": "<https://github.com/${{ github.repository }}/pull/${{ github.event.pull_request.number }}>"
-                    },
-                    {
-                      "title": "Status",
-                      "short": true,
-                      "value": "CI Passed"
                     },
                     {
                       "title": "Branch",
