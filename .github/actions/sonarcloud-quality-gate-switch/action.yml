@@ -1,0 +1,28 @@
+# https://help.github.com/en/articles/metadata-syntax-for-github-actions
+name: 'Docker Compose CI generator action'
+description: "An action to generate a docker-compose.ci.yml file"
+author: 'thefork'
+inputs:
+  SONARCLOUD_ADMIN_TOKEN:
+    description: an admin token to select a quality gate on a project when running the CI
+    required: true
+    type: string
+  PROJECT_KEY:
+    description: the project key when running the CI
+    required: true
+    type: string
+  TMP_GATE_NAME:
+    description: the quality gate name to switch to temporarily before the sonarcloud analysis
+    required: true
+    type: string
+  CURRENT_GATE_NAME:
+    description: the current quality gate name to switch back after the sonarcloud analysis
+    required: true
+    type: string
+branding:
+  icon: 'anchor'
+  color: 'blue'
+runs:
+  using: 'node16'
+  main: 'dist/main/index.js'
+  post: 'dist/post/index.js'
