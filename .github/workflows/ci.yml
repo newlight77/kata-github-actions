@@ -158,43 +158,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: test-unit
     steps:
-      - name: Checkout 🛎️
-        uses: actions/checkout@v3
-        with:
-          persist-credentials: false
-      - name: download coverage from unit tests
-        uses: actions/download-artifact@v3
-        id: download-coverage-from-unit-tests
-        with:
-          name: coverage-from-unit-tests
-        continue-on-error: true
-      - name: download coverage from features tests
-        uses: actions/download-artifact@v3
-        id: download-coverage-from-features-tests
-        with:
-          name: coverage-from-features-tests
-        continue-on-error: true
-      - name: install pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 8
-          run_install: false
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '16'
-          cache: 'pnpm'
-      - name : install dependencies
-        run: make install-offline
-      - name : prepare and merge coverage files
-        run: make merge-coverage
       - name: run sonarcloud scanner
         uses: newlight77/kata-monorepo-github-actions/.github/actions/sonarcloud-scanner@sonarcloud-quality-gate-switch
         env:
           SONARCLOUD_ADMIN_TOKEN: ${{ secrets.SONARCLOUD_ADMIN_TOKEN }}
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        
+      
   notify-slack:
     needs:
       - codecov
