@@ -76,23 +76,44 @@ runs:
     - name: get current quality gate for project if bypass-quality-gate
       if: contains(env.HEAD_COMMIT_MESSAGE, 'bypass-quality-gate')
       run: |
-        echo /usr/bin/curl -u $SONARCLOUD_ADMIN_TOKEN: https://sonarcloud.io/api/qualitygates/get_by_project?projectKey=$PROJECT_KEY
-        current=$(/usr/bin/curl -u $SONARCLOUD_ADMIN_TOKEN: https://sonarcloud.io/api/qualitygates/get_by_project?projectKey=$PROJECT_KEY)
-        echo "CURRENT_GATE_NAME=$current"
-        echo "CURRENT_GATE_NAME=$current" >> $GITHUB_ENV
-        echo "env.CURRENT_GATE_NAME: $CURRENT_GATE_NAME"
+        echo /usr/bin/curl -u $SONARCLOUD_ADMIN_TOKEN: "https://sonarcloud.io/api/qualitygates/get_by_project?project=$PROJECT_KEY&organization=$ORGANIZATION"
+        /usr/bin/curl -u $SONARCLOUD_ADMIN_TOKEN: "https://sonarcloud.io/api/qualitygates/get_by_project?project=$PROJECT_KEY&organization=$ORGANIZATION"
+        current=$(/usr/bin/curl -u $SONARCLOUD_ADMIN_TOKEN: "https://sonarcloud.io/api/qualitygates/get_by_project?project=$PROJECT_KEY&organization=$ORGANIZATION" | jq '.[].id')
+        echo ""
+        echo "CURRENT_GATE_ID=$current"
+        echo "CURRENT_GATE_ID=$current" >> $GITHUB_ENV
       shell: bash
       env:
         SONARCLOUD_ADMIN_TOKEN: ${{ inputs.SONARCLOUD_ADMIN_TOKEN }}
-        PROJECT_KEY: "lafourchette_${{ github.event.repository.name }}"
+        ORGANIZATION: "thefork"
+        PROJECT_KEY: "lafourchette_thefork-map"
+        # PROJECT_KEY: "lafourchette_${{ github.event.repository.name }}"
+
+    # - name: get current quality gate for project if bypass-quality-gate
+    #   id: get-current-quality-gate-id
+    #   if: contains(env.HEAD_COMMIT_MESSAGE, 'bypass-quality-gate')
+    #   uses: satak/webrequest-action@master
+    #   with:
+    #     url: https://sonarcloud.io/api/qualitygates/get_by_project
+    #     method: GET
+    #     username: ${{ inputs.SONARCLOUD_ADMIN_TOKEN }}
+    #     password: ""
+    #     payload: '{"organization": "thefork", "project": "lafourchette_thefork-map"}'
+    # - name: extract current quality gate id from output
+    #   run: |
+    #     $output = '${{ steps.get-current-quality-gate-id.outputs.output.data }}' | ConvertFrom-Json
+    #   shell: bash
+
     - name: switch to temporary quality gate if bypass-quality-gate
       if: contains(env.HEAD_COMMIT_MESSAGE, 'bypass-quality-gate')
-      uses: newlight77/kata-monorepo-github-actions/.github/actions/sonarcloud-quality-gate-switch@sonarcloud-quality-gate-switch
+      uses: newlight77/kata-monorepo-github-actions/.github/actions/sonarcloud-quality-gate-switch-action@sonarcloud-quality-gate-switch
       with:
         sonarcloudToken: ${{ inputs.SONARCLOUD_ADMIN_TOKEN }}
-        projectKey: "lafourchette_${{ github.event.repository.name }}"
-        currentGateName: ${{ env.CURRENT_GATE_NAME }}
-        tmpGateName: "TheFork Way Tmp"
+        # projectKey: "lafourchette_${{ github.event.repository.name }}"
+        organization: "thefork"
+        projectKey: "lafourchette_thefork-map"
+        currentGateId: ${{ env.CURRENT_GATE_ID }}
+        tmpGateId: "91710"
     # - name: run sonarcloud action
     #   uses: SonarSource/sonarcloud-github-action@v2.0.0
     #   env:
