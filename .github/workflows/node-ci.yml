@@ -1,8 +1,10 @@
 name: CI
 
 on:
-  push:
-    branches: [ main ]
+  pull_request:
+    branches:
+      - main
+      - "release/*"
 
 jobs:
   display-variables:
@@ -166,7 +168,7 @@ jobs:
     environment: CI
     steps:
       - name: run sonarcloud scanner
-        uses: newlight77/kata-monorepo-github-actions/.github/actions/sonarcloud-scanner@sonarcloud-quality-gate-switch
+        uses: newlight77/github-actions/.github/actions/sonarcloud-scanner@main
         with:
           SONARCLOUD_ADMIN_TOKEN: ${{ secrets.SONARCLOUD_ADMIN_TOKEN }}
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
