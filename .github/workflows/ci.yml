@@ -6,9 +6,6 @@ on:
   pull_request:
     branches: [ main ]
 
-env:
-  ENV_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-
 jobs:
   display-variables:
     name: display ci variables
@@ -19,11 +16,21 @@ jobs:
       run: |
         echo "SECRET_TOKEN : $SECRET_TOKEN"
         echo "VAR_TOKEN : $VARS_TOKEN"
-        echo "ENV_TOKEN : $ENV_TOKEN"
+        echo "PR_HEAD : $PR_HEAD"
+        echo "PR_HEAD_SHA : $PR_HEAD_SHA"
+        # echo "PR_HEAD_MESSAGE : $PR_HEAD_MESSAGE"
+        # echo "PR_HEAD_COMMIT_MESSAGE : $PR_HEAD_COMMIT_MESSAGE"
+        # echo "WK_HEAD_COMMIT_MESSAGE : $WK_HEAD_COMMIT_MESSAGE"
+        # echo "GITHUB_CONTEXT : $GITHUB_CONTEXT"
       env:
         SECRET_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
         VARS_TOKEN: ${{ vars.SLACK_BOT_TOKEN }}
-        ENV_TOKEN: ${{ env.ENV_TOKEN }}
+        PR_HEAD: ${{ toJSON(github.event.pull_request.head) }}
+        PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        # PR_HEAD_MESSAGE: ${{ github.event.pull_request.head.message }}
+        # PR_HEAD_COMMIT_MESSAGE: ${{ github.event.pull_request.head_commit.message }}
+        # WK_HEAD_COMMIT_MESSAGE: ${{ github.event.workflow_run.head_commit.message }}
+        # GITHUB_CONTEXT: ${{ toJSON(github) }}
 
   build:
     runs-on: ubuntu-latest
@@ -113,6 +120,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - test-unit
+    environment: CI
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@v3
@@ -157,10 +165,11 @@ jobs:
   sonarcloud:
     runs-on: ubuntu-latest
     needs: test-unit
+    environment: CI
     steps:
       - name: run sonarcloud scanner
         uses: newlight77/kata-monorepo-github-actions/.github/actions/sonarcloud-scanner@sonarcloud-quality-gate-switch
-        env:
+        with:
           SONARCLOUD_ADMIN_TOKEN: ${{ secrets.SONARCLOUD_ADMIN_TOKEN }}
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
