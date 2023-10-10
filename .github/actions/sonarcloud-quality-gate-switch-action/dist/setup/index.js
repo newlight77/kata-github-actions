@@ -29716,7 +29716,7 @@ exports["default"] = _default;
 
 /***/ }),
 
-/***/ 7051:
+/***/ 399:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -29758,10 +29758,11 @@ const core = __importStar(__nccwpck_require__(2186));
 const selectGate_1 = __nccwpck_require__(8856);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
-        const sonarToken = core.getInput('SONARCLOUD_ADMIN_TOKEN');
-        const projectKey = core.getInput('PROJECT_KEY');
-        const gateName = core.getInput('CURRENT_GATE_NAME');
-        (0, selectGate_1.selectGate)(sonarToken, projectKey, gateName);
+        const sonarToken = core.getInput('sonarcloudToken');
+        const organization = core.getInput('organization');
+        const projectKey = core.getInput('projectKey');
+        const gateId = core.getInput('tmpGateId');
+        (0, selectGate_1.selectGate)(sonarToken, organization, projectKey, gateId);
     });
 }
 run();
@@ -29815,13 +29816,15 @@ const core = __importStar(__nccwpck_require__(2186));
 const axios_1 = __importDefault(__nccwpck_require__(6545));
 const host = "https://sonarcloud.io";
 const baseUrl = "/api/api/qualitygates";
-function selectGate(token, projectKey, gateName) {
+function selectGate(token, organization, projectKey, gateId) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            core.debug(`Switching the quality gate of ${projectKey} to ${gateName}`);
-            const url = `${host}${baseUrl}/get_by_project`;
+            core.debug(`Switching the quality gate of ${projectKey} to ${gateId}`);
+            const url = `${host}${baseUrl}/select`;
             yield axios_1.default.post(url, {
-                projectKey: projectKey
+                organization: organization,
+                projectKey: projectKey,
+                gateId: gateId
             }, {
                 auth: {
                     username: token,
@@ -29837,11 +29840,11 @@ function selectGate(token, projectKey, gateName) {
     });
 }
 exports.selectGate = selectGate;
-function getGateByProject(token, projectKey) {
+function getGateByProject(token, projectKey, organization) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             core.debug(`Getting the current quality gate for ${projectKey}`);
-            const url = `${host}${baseUrl}/get_by_project?projectKey=${projectKey}`;
+            const url = `${host}${baseUrl}/get_by_project?project=${projectKey}&organization=${organization}`;
             return yield axios_1.default.get(url, {
                 auth: {
                     username: token,
@@ -30144,7 +30147,7 @@ module.exports = JSON.parse('{"name":"axios","version":"0.21.4","description":"P
 /******/ 	// startup
 /******/ 	// Load entry module and return exports
 /******/ 	// This entry module is referenced by other modules so it can't be inlined
-/******/ 	var __webpack_exports__ = __nccwpck_require__(7051);
+/******/ 	var __webpack_exports__ = __nccwpck_require__(399);
 /******/ 	module.exports = __webpack_exports__;
 /******/ 	
 /******/ })()

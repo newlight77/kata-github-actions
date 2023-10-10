@@ -3,10 +3,11 @@ import { selectGate } from './selectGate';
 
 async function run() {
     const sonarToken: string = core.getInput('sonarcloudToken');
+    const organization: string = core.getInput('organization');
     const projectKey: string = core.getInput('projectKey');
-    const gateName: string = core.getInput('tmpGateName');
+    const gateId: string = core.getInput('tmpGateId');
 
-    selectGate(sonarToken, projectKey, gateName);
+    selectGate(sonarToken, organization, projectKey, gateId);
 }
 
 run();

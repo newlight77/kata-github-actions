@@ -1,5 +1,5 @@
 {
-  "name": "sonarcloud-quality-gate-switch",
+  "name": "sonarcloud-quality-gate-switch-action",
   "description": "switch to temp quality gate and switch back",
   "main": "lib/main.js",
   "scripts": {
