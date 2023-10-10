@@ -82,6 +82,7 @@ runs:
         echo ""
         echo "CURRENT_GATE_ID=$current"
         echo "CURRENT_GATE_ID=$current" >> $GITHUB_ENV
+        
       shell: bash
       env:
         SONARCLOUD_ADMIN_TOKEN: ${{ inputs.SONARCLOUD_ADMIN_TOKEN }}
