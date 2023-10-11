@@ -130,12 +130,6 @@ jobs:
         with:
           name: coverage-from-unit-tests
         continue-on-error: true
-      - name: download coverage from features tests
-        uses: actions/download-artifact@v3
-        id: download-coverage-from-features-tests
-        with:
-          name: coverage-from-features-tests
-        continue-on-error: true
       - name: install pnpm
         uses: pnpm/action-setup@v2
         with:
