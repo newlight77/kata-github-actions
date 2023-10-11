@@ -3,22 +3,23 @@ import axios from 'axios';
 
 
 const host = "https://sonarcloud.io";
-const baseUrl = "/api/api/qualitygates";
+const baseUrl = "/api/qualitygates";
 
-export async function selectGate(token: string, organization: string, projectKey: string, gateId: string) {
+export async function selectGate(sonarToken: string, organization: string, projectKey: string, gateId: string) {
     try {
 
         core.debug(`Switching the quality gate of ${projectKey} to ${gateId}`);
 
-        const url = `${host}${baseUrl}/select`;
+        const url = `${host}${baseUrl}/select?organization=${organization}&projectKey=${projectKey}&gateId=${gateId}`;
 
-        await axios.post(url, {
-            organization: organization,
-            projectKey: projectKey,
-            gateId: gateId
-        }, { 
+        console.log(`calling sonarcloud url=${url} organization=${organization} projectKey=${organization} gate=${gateId}`);
+
+        const response = await axios.post(url, {}, { 
+            // headers : {
+            //     "Content-Type": "application/x-www-form-urlencoded"
+            // },
             auth: {
-                username: token,
+                username: sonarToken,
                 password: ''
             }
         });

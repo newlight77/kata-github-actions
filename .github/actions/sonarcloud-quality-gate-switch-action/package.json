@@ -4,16 +4,18 @@
   "main": "lib/main.js",
   "scripts": {
     "build": "npm run build:main && npm run build:post",
-    "build:main": "ncc build src/main.ts -o dist/setup",
+    "build:main": "ncc build src/main.ts -o dist/main",
     "build:post": "ncc build src/post.ts -o dist/post",
-    "lint": "eslint src/**/*.ts"
+    "lint": "eslint src/**/*.ts",
+    "test": "jest --coverage"
   },
   "dependencies": {
     "@actions/core": "^1.7.0",
     "axios": "^0.21.1"
   },
   "devDependencies": {
-    "@types/node": "^16.11.26",
+    "@types/jest": "^29.5.5",
+    "@types/node": "^20.8.2",
     "@typescript-eslint/eslint-plugin": "^5.14.0",
     "@typescript-eslint/parser": "^5.14.0",
     "@vercel/ncc": "^0.33.3",
@@ -22,10 +24,13 @@
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-jest": "^26.1.1",
     "eslint-plugin-prettier": "^4.0.0",
-    "jest": "^27.2.5",
+    "jest": "^29",
     "prettier": "^2.3.1",
-    "ts-jest": "^27.1.2",
+    "ts-jest": "^29",
     "ts-node": "^10.7.0",
     "typescript": "^4.4.4"
+  },
+  "jest": {
+    "preset": "./jest-preset.js"
   }
 }
