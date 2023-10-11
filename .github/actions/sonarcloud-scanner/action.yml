@@ -101,7 +101,7 @@ runs:
 
     - name: switch to temporary quality gate if bypass-quality-gate
       if: contains(env.HEAD_COMMIT_MESSAGE, 'bypass-quality-gate')
-      uses: newlight77/kata-monorepo-github-actions/.github/actions/sonarcloud-quality-gate-switch-action@sonarcloud-quality-gate-switch
+      uses: ./.github/actions/sonarcloud-quality-gate-switch-action
       with:
         sonarcloudToken: ${{ inputs.SONARCLOUD_ADMIN_TOKEN }}
         # projectKey: "lafourchette_${{ github.event.repository.name }}"

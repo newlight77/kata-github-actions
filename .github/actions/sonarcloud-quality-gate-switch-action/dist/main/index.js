@@ -29815,19 +29815,19 @@ exports.getGateByProject = exports.selectGate = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const axios_1 = __importDefault(__nccwpck_require__(6545));
 const host = "https://sonarcloud.io";
-const baseUrl = "/api/api/qualitygates";
-function selectGate(token, organization, projectKey, gateId) {
+const baseUrl = "/api/qualitygates";
+function selectGate(sonarToken, organization, projectKey, gateId) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             core.debug(`Switching the quality gate of ${projectKey} to ${gateId}`);
-            const url = `${host}${baseUrl}/select`;
-            yield axios_1.default.post(url, {
-                organization: organization,
-                projectKey: projectKey,
-                gateId: gateId
-            }, {
+            const url = `${host}${baseUrl}/select?organization=${organization}&projectKey=${projectKey}&gateId=${gateId}`;
+            console.log(`calling sonarcloud url=${url} organization=${organization} projectKey=${organization} gate=${gateId}`);
+            const response = yield axios_1.default.post(url, {}, {
+                // headers : {
+                //     "Content-Type": "application/x-www-form-urlencoded"
+                // },
                 auth: {
-                    username: token,
+                    username: sonarToken,
                     password: ''
                 }
             });
