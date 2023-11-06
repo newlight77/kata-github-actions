@@ -69,6 +69,12 @@ runs:
         tmp-gate-id: "91010" # Gate name : "TheFork Way (Terraform) - exclusion"
         pr-head-commit: ${{ github.event.pull_request.head.sha }}
 
+    - name: 'select sonar properties'
+      id: sonar-properties
+      uses: newlight77/kata-monorepo-github-actions/.github/actions/sonar-properties@main
+      with:
+        project-stack: ${{ inputs.project-stack }}
+
     # - name: run sonarcloud action
     #   uses: SonarSource/sonarcloud-github-action@v2.0.0
     #   env:
