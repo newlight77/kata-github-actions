@@ -29755,14 +29755,18 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
-const selectGate_1 = __nccwpck_require__(8856);
+const sonar_provider_1 = __nccwpck_require__(7955);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
-        const sonarToken = core.getInput('sonarcloudToken');
+        const sonarToken = core.getInput('sonarcloud-token');
         const organization = core.getInput('organization');
-        const projectKey = core.getInput('projectKey');
-        const gateId = core.getInput('currentGateId');
-        (0, selectGate_1.selectGate)(sonarToken, organization, projectKey, gateId);
+        const projectKey = core.getInput('project-key');
+        if (!core.getState('head-commit-message').includes('[bypass quality-gate]')) {
+            core.info(`Quality Gate : no bypass`);
+            return;
+        }
+        const currentGateId = core.getState('current-gate-id');
+        (0, sonar_provider_1.selectGate)(sonarToken, organization, projectKey, currentGateId);
     });
 }
 run();
@@ -29770,7 +29774,7 @@ run();
 
 /***/ }),
 
-/***/ 8856:
+/***/ 7955:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -29819,18 +29823,22 @@ const baseUrl = "/api/qualitygates";
 function selectGate(sonarToken, organization, projectKey, gateId) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            core.debug(`Switching the quality gate of ${projectKey} to ${gateId}`);
-            const url = `${host}${baseUrl}/select?organization=${organization}&projectKey=${projectKey}&gateId=${gateId}`;
-            console.log(`calling sonarcloud url=${url} organization=${organization} projectKey=${organization} gate=${gateId}`);
-            const response = yield axios_1.default.post(url, {}, {
-                // headers : {
-                //     "Content-Type": "application/x-www-form-urlencoded"
-                // },
+            core.info(`Quality Gate : switching of ${projectKey} to ${gateId}`);
+            const url = `${host}${baseUrl}/select`;
+            const params = {
+                organization: organization,
+                projectKey: projectKey,
+                gateId: gateId
+            };
+            core.debug(`calling sonarcloud params=${JSON.stringify(params)}`);
+            yield axios_1.default.post(url, {}, {
+                params: params,
                 auth: {
                     username: sonarToken,
                     password: ''
                 }
             });
+            core.info(`Quality Gate : ${projectKey} is assigned to gate=${gateId}`);
         }
         catch (error) {
             // Fail the workflow run if an error occurs
@@ -29840,23 +29848,32 @@ function selectGate(sonarToken, organization, projectKey, gateId) {
     });
 }
 exports.selectGate = selectGate;
-function getGateByProject(token, projectKey, organization) {
+function getGateByProject(sonarToken, organization, projectKey) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            core.debug(`Getting the current quality gate for ${projectKey}`);
-            const url = `${host}${baseUrl}/get_by_project?project=${projectKey}&organization=${organization}`;
-            return yield axios_1.default.get(url, {
+            core.info(`Retrieve the quality gate for projectKey=${projectKey}`);
+            const url = `${host}${baseUrl}/get_by_project`;
+            const params = {
+                organization: organization,
+                project: projectKey,
+            };
+            core.debug(`calling sonarcloud params=${JSON.stringify(params)}`);
+            const response = yield axios_1.default.get(url, {
+                params: params,
                 auth: {
-                    username: token,
+                    username: sonarToken,
                     password: ''
                 }
             });
+            const gate = response.data;
+            core.info(`Quality Gate : ${projectKey} is assigned to gate=${JSON.stringify(gate.qualityGate)}`);
+            return gate.qualityGate;
         }
         catch (error) {
             // Fail the workflow run if an error occurs
             if (error instanceof Error)
                 core.setFailed(error.message);
-            return '';
+            return { default: false, id: 0, name: "" };
         }
     });
 }

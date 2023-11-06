@@ -160,12 +160,13 @@ jobs:
     environment: CI
     steps:
       - name: run sonarcloud scanner
-        uses: newlight77/github-actions/.github/actions/sonarcloud-scanner@main
+        uses: ./.github/actions/sonarcloud-scanner
         with:
           SONARCLOUD_ADMIN_TOKEN: ${{ secrets.SONARCLOUD_ADMIN_TOKEN }}
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      
+          project-stack: "node"
+
   notify-slack:
     needs:
       - codecov
