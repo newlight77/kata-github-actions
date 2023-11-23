@@ -12,3 +12,4 @@ jobs:
     with: 
       slack-room-id: 'C05UA1LUW1H'
       project-stack: "node"
+      sonar-properties-path: ${{ github.workspace }}
