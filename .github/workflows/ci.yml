@@ -14,6 +14,11 @@ jobs:
       - name: display variables
         run: |
           echo github.ref=${{github.ref}}
+          echo github.ref_name=${{github.ref_name}}
+          echo github.action_ref=${{github.action_ref}}
+          echo github.workflow_ref=${{github.workflow_ref}}
+          echo github.head_ref=${{github.head_ref}}
+          echo github.base_ref=${{github.base_ref}}
         shell: bash
   ci: 
     uses: newlight77/github-actions/.github/workflows/node-ci.yml@main
