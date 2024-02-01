@@ -7,16 +7,33 @@ on:
     branches: [main]
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - name: display variables
-        run: |
-          echo github.ref=${{github.ref}}
-        shell: bash
+  # test:
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 5
+  #   steps:
+  #     - name: display variables
+  #       run: |
+  #         echo github.ref=${{github.ref}}
+  #         echo github.ref_name=${{github.ref_name}}
+  #         echo github.action_ref=${{github.action_ref}}
+  #         echo github.workflow_ref=${{github.workflow_ref}}
+  #         echo github.head_ref=${{github.head_ref}}
+  #         echo github.base_ref=${{github.base_ref}}
+  #         # github.ref=refs/pull/6/merge
+  #         # github.ref_name=6/merge
+  #         # github.action_ref=
+  #         # github.workflow_ref=newlight77/kata-monorepo-github-actions/.github/workflows/ci.yml@refs/pull/6/merge
+  #         # github.head_ref=chore/ref
+  #         # github.base_ref=main
+  #       shell: bash
+
   ci: 
     uses: newlight77/github-actions/.github/workflows/node-ci.yml@main
-    with: 
+    with:
+      lint: true
+      coverage-tool: 'sonarcloud'
       slack-room-id: 'C05UA1LUW1H'
-      project-stack: "node"
+    secrets:
+      slack-bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
+      sonar-token: ${{ secrets.SONAR_TOKEN }}
+
