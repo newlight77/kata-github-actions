@@ -29,11 +29,13 @@ jobs:
 
   ci: 
     uses: newlight77/github-actions/.github/workflows/node-ci.yml@main
-    with:
-      lint: true
-      coverage-tool: 'sonarcloud'
-      slack-room-id: 'C05UA1LUW1H'
     secrets:
       slack-bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
       sonar-token: ${{ secrets.SONAR_TOKEN }}
-
+      codecov-token: ${{ secrets.CODECOV_TOKEN }}
+    with:
+      with-lint: true
+      coverage-tool: 'sonar, codecov'
+      slack-room-id: 'C05UA1LUW1H'
+      with-unit-test: true
+      with-feature-test: false
